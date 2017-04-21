@@ -2,6 +2,8 @@
 // original c can be found at: `github.com/bitcoin-core/ctaes`
 #![no_std]
 
+// reexport the utils mod.
+pub mod utils;
 
 //// Public Api Wrappers ////
 
