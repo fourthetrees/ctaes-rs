@@ -7,14 +7,21 @@
 pub fn parse_hex_128(hex: &str) -> [u8;16] {
     let mut collector: [u8;16] = [0;16];
     let mut chars = hex.chars();
+    let mut next_val = move || { chars.next().unwrap_or('0').to_digit(16).unwrap_or(0) as u8 };
     for i in 0..16 {
-        let mut a = '0'; let mut b = '0';
-        let mut val: [u8;2] = [0,0];
-        if let Some(c) = chars.next() { a = c; }
-        if let Some(c) = chars.next() { b = c; }
-        if let Some(n) = a.to_digit(16) {val[0] = n as u8;}
-        if let Some(n) = b.to_digit(16) {val[1] = n as u8;}
-        collector[i] = (val[0] << 4) | val[1];
+        collector[i] = (next_val() << 4) | next_val();
     }
     collector
 }
+
+#[test]
+#[cfg(test)]
+fn test() {
+    let hex = "00ff00ff00ff00ff00ff00ff00ff00ff";
+    let values: [u8;16] = [0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255];
+    let converted = parse_hex_128(hex);
+    assert_eq!(values,converted);
+}
+
+
+
