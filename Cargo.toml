@@ -1,0 +1,12 @@
+[package]
+name = "ctaes"
+version = "0.1.0"
+authors = ["forrest <fspmarshall@gmail.com>"]
+build = "build.rs"
+
+[dependencies]
+# may not need libc after all...
+# libc = { version = "0.2.21", default-features = false }
+
+[build-dependencies]
+gcc = "0.3.45"
