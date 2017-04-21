@@ -3,6 +3,8 @@
 #![no_std]
 
 
+//// Public Api Wrappers ////
+
 pub struct AES128 { ctx: AES128_ctx }
 
 impl AES128 {
@@ -21,6 +23,8 @@ impl AES128 {
 }
 
 
+//// Basic Wrappers ////
+
 // minimal safe wrapper around init function.
 fn init_128(ctx: &mut AES128_ctx, key: &[u8;16]) {
     unsafe { AES128_init(ctx, key.as_ptr()); }
@@ -34,6 +38,8 @@ fn decrypt_128(ctx: &AES128_ctx, buff: &mut [u8;16], data: &[u8;16]) {
     unsafe { AES128_decrypt(ctx, 1, buff.as_mut_ptr(), data.as_ptr()); }
 }
 
+
+//// C Struct Definitions ////
 
 // rust definition for struct defined in `ctaes`.
 #[repr(C)] // use C-compatible mem layout.
@@ -68,7 +74,8 @@ impl AES128_ctx {
 }
 
 
-// This is where the actual linking to `ctaes` occurs.
+//// External Linking ////
+
 // we need to specify that we want a `static` linking,
 // otherwise we can't compile to a single binary.
 #[link(name = "ctaes", kind = "static")]
@@ -84,59 +91,4 @@ extern {
 }
 
 
-// A bare minimum test of the safe interface functions.
-#[test]
-fn basic_test() {
-    // initialzie test values.
-    let key: [u8;16] = to_u8(0x2b7e151628aed2a6, 0xabf7158809cf4f3c);
-    let plain: [u8;16] = to_u8(0x6bc1bee22e409f96, 0xe93d7e117393172a);
-    let cipher: [u8;16] = to_u8(0x3ad77bb40d7a3660, 0xa89ecaf32466ef97);
-    // initialize buffers.
-    let mut ciphered: [u8;16] = [0;16]; // buffer to recieve encrypted data.
-    let mut deciphered: [u8;16] = [0;16]; // buffer to recieve decrypted data.
-    let mut ctx = AES128_ctx::new(); // generate the context struct.
-
-    // init_128(context: &mut AES128_ctx, key: &[u8;16])
-    init_128(&mut ctx, &key);
-    // encrypt_128(cxt: &AES128_ctx, buff: &mut [u8;16], data: &[u8;16])
-    encrypt_128(&ctx, &mut ciphered, &plain);
-    // decrypt_128(ctx: &AES128_ctx, buff: &mut [u8;16], data: &[u8;16])
-    decrypt_128(&ctx, &mut deciphered, &cipher);
-    // check that encryption succeeded.
-    assert_eq!(ciphered,cipher);
-    // check that decryption succeeded.
-    assert_eq!(deciphered,plain);
-}
-
-
-// a helper function for the tests.
-fn to_u8(a: u64, b: u64) -> [u8;16] {
-    let masks: [u64;8] = [
-        0xff00000000000000, 0x00ff000000000000,
-        0x0000ff0000000000, 0x000000ff00000000,
-        0x00000000ff000000, 0x0000000000ff0000,
-        0x000000000000ff00, 0x00000000000000ff
-    ];
-    let mut collector: [u8;16] = [0;16];
-    for (i,m) in masks.clone().iter().enumerate() {
-        collector[i] = ((a & m) >> ((7 - i) * 8)) as u8;
-    }
-    for (i,m) in masks.iter().enumerate() {
-        collector[i+8] = ((b & m) >> ((7 - i) * 8)) as u8;
-    }
-    collector
-}
-
-
-// ensure that helper function is splitting u64's as expected.
-#[test]
-fn helper_test() {
-    let a: u64 = 0x00ff00ff00ff00ff;
-    let b: u64 = 0x00ff00ff00ff00ff;
-    let c: [u8;16] = [
-        0x00,0xff,0x00,0xff,0x00,0xff,0x00,0xff,
-        0x00,0xff,0x00,0xff,0x00,0xff,0x00,0xff
-    ];
-    let d: [u8;16] = to_u8(a,b);
-    assert_eq!(c,d);
-}
+//// Nothing To See Here ////
