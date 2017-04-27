@@ -1,0 +1,3 @@
+[submodule "dep/ctaes"]
+	path = dep/ctaes
+	url = https://github.com/bitcoin-core/ctaes
