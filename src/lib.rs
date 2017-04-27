@@ -7,38 +7,34 @@ pub mod utils;
 
 //// Public Api Wrappers ////
 
+// public wrapper around the C struct definition.
 pub struct AES128 { ctx: AES128_ctx }
 
+// public interface to the C functions.
 impl AES128 {
+
+    #[inline]
+    // create a new instance of the aes context.
     pub fn new() -> Self {
         AES128 { ctx: AES128_ctx::new() }
     }
+
+    // initialize the aes instance with a key.
     pub fn init(&mut self, key: &[u8;16]) {
-        init_128(&mut self.ctx, key);
+        unsafe { AES128_init(&mut self.ctx, key.as_ptr()); }
     }
+
+    // encrypt some data to a buffer.
     pub fn encrypt(&self, buff: &mut [u8;16], data: &[u8;16]) {
-        encrypt_128(&self.ctx, buff, data);
+        unsafe { AES128_encrypt(&self.ctx, 1, buff.as_mut_ptr(), data.as_ptr()); }
     }
+
+    // decrypt some data to a buffer.
     pub fn decrypt(&self, buff: &mut [u8;16], data: &[u8;16]) {
-        decrypt_128(&self.ctx, buff, data);
+        unsafe { AES128_decrypt(&self.ctx, 1, buff.as_mut_ptr(), data.as_ptr()); }
     }
 }
 
-
-//// Basic Wrappers ////
-
-// minimal safe wrapper around init function.
-fn init_128(ctx: &mut AES128_ctx, key: &[u8;16]) {
-    unsafe { AES128_init(ctx, key.as_ptr()); }
-}
-// minimal safe wrapper around encrypt function.
-fn encrypt_128(ctx: &AES128_ctx, buff: &mut [u8;16], data: &[u8;16]) {
-    unsafe { AES128_encrypt(ctx, 1, buff.as_mut_ptr(), data.as_ptr()); }
-}
-// minimal safe wrapper around decrypt function.
-fn decrypt_128(ctx: &AES128_ctx, buff: &mut [u8;16], data: &[u8;16]) {
-    unsafe { AES128_decrypt(ctx, 1, buff.as_mut_ptr(), data.as_ptr()); }
-}
 
 
 //// C Struct Definitions ////
