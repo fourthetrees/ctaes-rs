@@ -9,8 +9,15 @@ pub mod utils;
 pub mod macros;
 
 
+// -- Basic Public Interface -- //
 
-//// C Struct Definitions ////
+
+
+
+
+
+
+// -- C Struct Definitions  -- //
 
 // rust definition for struct defined in `ctaes`.
 #[repr(C)] // use C-compatible mem layout.
@@ -37,7 +44,7 @@ struct AES128_ctx {
 
 impl AES128_ctx {
     // generate a blank/zeroed instance.
-    pub fn new() -> Self {
+    fn new() -> Self {
         AES128_ctx {
             rk: [AES_state::new();11]
         }
@@ -45,7 +52,7 @@ impl AES128_ctx {
 }
 
 
-//// External Linking ////
+// -- External Linking -- //
 
 // we need to specify that we want a `static` linking,
 // otherwise we can't compile to a single binary.
@@ -62,4 +69,4 @@ extern {
 }
 
 
-//// Nothing To See Here ////
+// -- Nothing To See Here  -- //
