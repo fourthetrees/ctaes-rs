@@ -1,43 +1,12 @@
 // rust bindings for the `ctaes` AES encrption library.
 // original c can be found at: `github.com/bitcoin-core/ctaes`
 #![no_std]
-
+#[macro_use]
 // reexport the utils mod.
 pub mod utils;
 
-//// Public Api Wrappers ////
-
-// public wrapper around the C struct definition.
-pub struct AES128 { context: AES128_ctx }
-
-// public interface to the C functions.
-impl AES128 {
-
-    #[inline]
-    // create a new instance of the aes context.
-    pub fn new(key) -> Self {
-        AES128 { ctx: AES128_ctx::new() }
-    }
-
-    // initialize the aes instance with a key.
-    pub fn init(&mut self, key: &[u8;16]) {
-        unsafe { AES128_init(&mut self.ctx, key.as_ptr()); }
-    }
-
-    // encrypt some data to a buffer.
-    pub fn encrypt(&self, buff: &mut [[u8;16]], data: &[[u8;16]]) {
-        let blocks: usize = buff.len(); // get the number of blocks being passed.
-        assert_eq!(blocks,data.len()); // don't do something unsafe/wasteful.
-        unsafe { AES128_encrypt(&self.ctx, blocks, buff.as_mut_ptr(), data.as_ptr()); }
-    }
-
-    // decrypt some data to a buffer.
-    pub fn decrypt(&self, buff: &mut [[u8;16]], data: &[[u8;16]]) {
-        let blocks: usize = buff.len(); // number of blocks being passed.
-        assert_eq!(blocks,data.len()); // never trust a programmer!
-        unsafe { AES128_decrypt(&self.ctx, blocks, buff.as_mut_ptr(), data.as_ptr()); }
-    }
-}
+#[macro_use]
+pub mod macros;
 
 
 

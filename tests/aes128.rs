@@ -1,9 +1,10 @@
 // basic test of 128-bit AES functionality.
+#[macro_use]
 extern crate ctaes;
-use ctaes::AES128;
 
 #[test]
 fn test1() {
+    aes_impl_128!(AES128,1);
     // initialzie test values.
     let key: [u8;16] = [
         0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,
