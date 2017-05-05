@@ -2,10 +2,13 @@
 // original c can be found at: `github.com/bitcoin-core/ctaes`
 #![no_std]
 
+// where all the C definitions & linkings live.
+mod wrappers;
+
 // reexport all the things!
 pub mod aes128;
 pub mod aes192;
-//pub mod aes256;
+pub mod aes256;
 pub mod utils;
 
 

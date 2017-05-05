@@ -2,6 +2,7 @@
 // encryption.
 
 use super::Aes;
+use super::wrappers::*;
 
 // Rustic handle for the underlying
 // `AES256_ctx` C struct.
@@ -41,53 +42,4 @@ impl Aes for Aes256 {
 }
 
 
-// -- C Struct Definitions  -- //
-
-// rust definition for struct defined in `ctaes`.
-#[repr(C)] // use C-compatible mem layout.
-#[derive(Copy,Clone)]
-struct AES_state {
-    slice: [u16;8] // uint16_t slice[8]
-}
-
-impl AES_state {
-    // generate a new black/zeroed instance.
-    fn new() -> Self {
-        AES_state {
-            slice: [0;8]
-        }
-    }
-}
-
-
-// rust definition for struct defined in `ctaes`.
-#[repr(C)] // use C-compatible mem layout.
-struct AES256_ctx {
-    rk: [AES_state;15]
-}
-
-impl AES256_ctx {
-    // generate a blank/zeroed instance.
-    fn new() -> Self {
-        AES256_ctx {
-            rk: [AES_state::new();15]
-        }
-    }
-}
-
-
-// -- External Linking -- //
-
-// we need to specify that we want a `static` linking,
-// otherwise we can't compile to a single binary.
-#[link(name = "ctaes", kind = "static")]
-extern {
-    // void AES256_init(AES256_ctx* ctx, const unsigned char* key16);
-    fn AES256_init(ctx: *mut AES256_ctx, key32: *const u8);
-
-    // void AES256_encrypt(const AES256_ctx* ctx, size_t blocks, unsigned char* cipher16, const unsigned char* plain16);
-    fn AES256_encrypt(ctx: *const AES256_ctx, blocks: usize, cipher16: *mut u8, plain16: *const u8 );
-
-    // void AES256_decrypt(const AES256_ctx* ctx, size_t blocks, unsigned char* plain16, const unsigned char* cipher16);
-    fn AES256_decrypt(ctx: *const AES256_ctx, blocks: usize, cipher16: *mut u8, plain16: *const u8);
-}
+// nothing to see here...
