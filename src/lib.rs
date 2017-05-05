@@ -4,10 +4,12 @@
 
 // reexport all the things!
 pub mod aes128;
+pub mod aes192;
+//pub mod aes256;
 pub mod utils;
 
 
-// The `AesUnsafe` trait is shared by all aes instances.  The
+// The `Aes` trait is shared by all aes instances.  The
 // only significant difference between implementations is
 // the key size used (E.g.; &[u8;16] for Aes128).
 pub trait Aes {
