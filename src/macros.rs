@@ -25,12 +25,12 @@ macro_rules! aes_impl_128 {
             }
 
             // encrypt some data to a buffer.
-            pub fn encrypt(&self, buff: &mut [u8;{$blocks * 16}], data: &[u8;{$blocks * 16}]) {
+            pub fn encrypt(&self, data: &[u8;{$blocks * 16}], buff: &mut [u8;{$blocks * 16}]) {
                 unsafe { AES128_encrypt(&self.context, $blocks, buff.as_mut_ptr(), data.as_ptr()); }
             }
 
             // decrypt some data to a buffer.
-            pub fn decrypt(&self, buff: &mut [u8;{$blocks * 16}], data: &[u8;{$blocks * 16}]) {
+            pub fn decrypt(&self, data: &[u8;{$blocks * 16}], buff: &mut [u8;{$blocks * 16}]) {
                 unsafe { AES128_decrypt(&self.context, $blocks, buff.as_mut_ptr(), data.as_ptr()); }
             }
         }
@@ -41,12 +41,12 @@ macro_rules! aes_impl_128 {
 #[test]
 fn macro_test() {
     aes_impl_128!(AES128,2);
-    
+
     let key: [u8;16] = [0b1010101;16];
     let original: [u8;32] = [0xf0;32];
     let mut ebuf: [u8;32] = [0x00;32];
     let mut dbuf: [u8;32] = [0x00;32];
-    
+
     let mut aes = AES128::new();
     aes.init(&key);
     aes.encrypt(&mut ebuf, &original);

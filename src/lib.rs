@@ -1,72 +1,51 @@
 // rust bindings for the `ctaes` AES encrption library.
 // original c can be found at: `github.com/bitcoin-core/ctaes`
 #![no_std]
-#[macro_use]
 // reexport the utils mod.
 pub mod utils;
 
-#[macro_use]
-pub mod macros;
 
+// The `Aes` trait is shared by all aes instances.  The
+// only significant difference between implementations is
+// the key size used (E.g.; &[u8;16] for Aes128).
+pub trait Aes {
+    // Type of key used to perform encryption.
+    // This will generally be an array of `u8`s.
+    type Key;
 
-// -- Basic Public Interface -- //
+    // Construct an Aes context with the supplied key.
+    #[inline] // Politely suggest that this operation be inlined.
+    fn init(&Key) -> Self;
 
+    // Raw encryption function.  If called with the wrong block-size,
+    // this can lead to out of bounds reads/writes.  Use the
+    // `set_block_size` macro to generate a safe wrapper.
+    unsafe fn encrypt_unsafe(&self, usize, &[u8], &mut [u8]);
 
-
-
-
-
-
-// -- C Struct Definitions  -- //
-
-// rust definition for struct defined in `ctaes`.
-#[repr(C)] // use C-compatible mem layout.
-#[derive(Copy,Clone)]
-struct AES_state {
-    slice: [u16;8] // uint16_t slice[8]
+    // Raw decryption function.  If called with the wrong block-size,
+    // this can lead to out of bounds reads/writes.  Use the
+    // `set_block_count!` macro to generate a safe wrapper.
+    unsafe fn decrypt_unsafe(&self, usize, &[u8], &mut [u8]);
 }
 
-impl AES_state {
-    // generate a new black/zeroed instance.
-    fn new() -> Self {
-        AES_state {
-            slice: [0;8]
+
+// Use `set_block_count!` to generate safe size-enforing wrappers
+// for encryption and decryption.  Each block is 128 bits; E.g.;
+// a block-count of one means `[u8;16]`, block count of two means
+// `[u8;32]`, and so on.
+#[macro_export]
+macro_rules! set_block_count {
+    ($name: ident, $blocks: expr) => {
+        impl $name {
+            // safe size-enforcing wrapper around `self.encrypt_unsafe`.
+            pub fn encrypt(&self, data: &[u8;{$blocks * 16}], buff: &mut [u8;{$blocks * 16}]) {
+                unsafe { self.encrypt_unsafe($blocks, data, buff); }
+            }
+
+            // safe size-enforcing wrapper around `self.decrypt_unsafe`.
+            pub fn decrypt(&self, data: &[u8;{$blocks * 16}], buff: &mut [u8;{$blocks * 16}]) {
+                unsafe { self.decrypt_unsafe($blocks, data, buff) }
+            }
         }
     }
 }
-
-
-// rust definition for struct defined in `ctaes`.
-#[repr(C)] // use C-compatible mem layout.
-struct AES128_ctx {
-    rk: [AES_state;11]
-}
-
-impl AES128_ctx {
-    // generate a blank/zeroed instance.
-    fn new() -> Self {
-        AES128_ctx {
-            rk: [AES_state::new();11]
-        }
-    }
-}
-
-
-// -- External Linking -- //
-
-// we need to specify that we want a `static` linking,
-// otherwise we can't compile to a single binary.
-#[link(name = "ctaes", kind = "static")]
-extern {
-    // void AES128_init(AES128_ctx* ctx, const unsigned char* key16);
-    fn AES128_init(ctx: *mut AES128_ctx, key16: *const u8);
-
-    // void AES128_encrypt(const AES128_ctx* ctx, size_t blocks, unsigned char* cipher16, const unsigned char* plain16);
-    fn AES128_encrypt(ctx: *const AES128_ctx, blocks: usize, cipher16: *mut u8, plain16: *const u8 );
-
-    // void AES128_decrypt(const AES128_ctx* ctx, size_t blocks, unsigned char* plain16, const unsigned char* cipher16);
-    fn AES128_decrypt(ctx: *const AES128_ctx, blocks: usize, cipher16: *mut u8, plain16: *const u8);
-}
-
-
-// -- Nothing To See Here  -- //
