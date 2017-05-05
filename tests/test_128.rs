@@ -1,10 +1,11 @@
 // basic test of 128-bit AES functionality.
 #[macro_use]
 extern crate ctaes;
+use ctaes::aes128::Aes128;
+
 
 #[test]
 fn test1() {
-    aes_impl_128!(AES128,1);
     // initialzie test values.
     let key: [u8;16] = [
         0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,
@@ -23,18 +24,18 @@ fn test1() {
     let mut encrypt_buff: [u8;16] = [0;16]; // buffer to recieve encrypted data.
     let mut decrypt_buff: [u8;16] = [0;16]; // buffer to recieve decrypted data.
 
-    // initialize context.
-    let mut aes = AES128::new();
-    // set up the secret/key.
-    aes.init(&key);
+    // set block-count to 1 (i.e.; [u8;16]).
+    set_block_count!(Aes128,1);
+    // initialize aes context.
+    let aes = Aes128::init(&key);
 
-    // encrypt plain data to buffer.
-    aes.encrypt(&mut encrypt_buff,&plain);
-    // check that encryption succeeded.
+    // encrypt plain-text to `encrypt_buff`.
+    aes.encrypt(&plain, &mut encrypt_buff);
+    // check against valid cipher-text.
     assert_eq!(encrypt_buff,cipher);
 
-    // decrypt cipher data to buffer.
-    aes.decrypt(&mut decrypt_buff,&cipher);
-    // check that decryption succeeded.
+    // decrypt cipher-text to `decrypt_buff`.
+    aes.decrypt(&cipher,&mut decrypt_buff);
+    // check against valid plain-text.
     assert_eq!(decrypt_buff,plain);
 }

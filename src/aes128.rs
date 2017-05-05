@@ -10,19 +10,19 @@ pub struct Aes128 {
 }
 
 // Basic public interface.
-pub impl Aes for Aes128 {
-
+impl Aes for Aes128 {
+    // fixed-size secret key.
     type Key = [u8;16];
 
     // Construct an Aes context with the supplied key.
     #[inline] // Politely suggest that this operation be inlined.
-    fn init(key: &Key) -> Self {
+    fn init(key: &Self::Key) -> Self {
         // generate a blank aes context.
         let mut ctx = AES128_ctx::new();
         // initialize the context with the supplied key.
         unsafe { AES128_init(&mut ctx, key.as_ptr()); }
         // return public handle to the context.
-        Self { context: ctx }
+        Aes128 { context: ctx }
     }
 
     // Raw encryption function.  If called with the wrong block-size,
